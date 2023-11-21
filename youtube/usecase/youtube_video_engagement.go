@@ -3,11 +3,11 @@ package usecase
 import (
 	"bytes"
 	"fmt"
+	"ll_test/app/logger"
+	"ll_test/domain"
+	"ll_test/youtube/repository/redis"
 	"os"
 	"strings"
-	"tiktok_api/app/logger"
-	"tiktok_api/domain"
-	"tiktok_api/youtube/repository/redis"
 
 	"google.golang.org/api/youtube/v3"
 )

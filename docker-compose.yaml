@@ -1,12 +1,12 @@
 version: "3.7"
 services:
   api:
-    container_name: social_media_management
+    container_name: little_lives_api
     build: 
       dockerfile: Dockerfile
       context: ./
     ports:
-      - 8000:8000
+      - 9001:9001
     command: ["air", "-c", ".air.toml"]
     depends_on:
       redis:
@@ -15,7 +15,7 @@ services:
       # - ./app/config/config.json:/app/config/config.json
       - ./:/app # Important to bind/mount your codebase dir to /app dir for live reload
 
-  # # redis service can be seperate for replication
+  # Redis service can be seperate for replication
   redis:
     image: redis:6.0.9
     container_name: redis_service
@@ -29,3 +29,29 @@ services:
       test: ["CMD", "redis-cli", "ping"]
       timeout: 5s
       retries: 10
+
+  # MongoDB service
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+      - 27017:27017
+    volumes:
+      - dbdata:/data/db
+
+  # Mongo Express service
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: root
+      ME_CONFIG_MONGODB_URL: mongodb://root:root@mongo:27017/
+
+volumes:
+  dbdata:

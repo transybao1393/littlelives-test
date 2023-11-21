@@ -8,12 +8,10 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 
-	"tiktok_api/app/pkg/httpErrors"
+	"ll_test/app/pkg/httpErrors"
 
-	hubspotDelivery "tiktok_api/hubspot/delivery"
-	hubspotMiddleware "tiktok_api/hubspot/delivery/http/middleware"
-
-	youtubeDelivery "tiktok_api/youtube/delivery"
+	llDelivery "ll_test/ll/delivery"
+	youtubeDelivery "ll_test/youtube/delivery"
 
 	"github.com/go-chi/httprate"
 )
@@ -53,9 +51,8 @@ func SetupRouter() *chi.Mux {
 	)) //- 100 request per 1 minute
 
 	// Routing
-	// r.Route("/tiktok", tiktokHandler)
-	r.Route("/hubspot", hubspotHandler)
 	r.Route("/youtube", youtubeHandler)
+	r.Route("/littlelives", llHandler)
 
 	return r
 }
@@ -72,13 +69,9 @@ func youtubeHandler(r chi.Router) {
 	})
 }
 
-func hubspotHandler(r chi.Router) {
-
-	r.HandleFunc("/auth/callback", hubspotDelivery.OAuthHubspotCallback)
-	r.Method("POST", "/update", Handler(hubspotDelivery.UpdateToken))
-
+func llHandler(r chi.Router) {
+	//- authentication here
 	r.Group(func(r chi.Router) {
-		r.Use(hubspotMiddleware.IsTokensValid)
-		r.Method("POST", "/call", Handler(hubspotDelivery.ListHubspotObjectFields))
+		r.Method("POST", "/file", Handler(llDelivery.LLVideoUploadFile))
 	})
 }

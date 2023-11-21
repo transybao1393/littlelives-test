@@ -2,8 +2,8 @@ package dbInstance
 
 import (
 	"context"
+	"ll_test/app/logger"
 	"sync"
-	"tiktok_api/app/logger"
 
 	"github.com/redis/go-redis/v9"
 )

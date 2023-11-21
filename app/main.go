@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
+	"ll_test/app/config"
+	"ll_test/app/connector"
 	"log"
 	"net/http"
-	"tiktok_api/app/config"
-	"tiktok_api/app/connector"
 
 	"github.com/spf13/viper"
 
-	"tiktok_api/app/logger"
+	"ll_test/app/logger"
 )
 
 // - VIPER lib for config.json reading when init moment
@@ -33,7 +33,7 @@ func main() {
 
 	// Start server
 	defaultFields := logger.Fields{
-		"service":  "social-media-management",
+		"service":  "littlelives",
 		"hostname": "localhost",
 	}
 	log.Fields(defaultFields).Infof("Program is running. Access http://localhost:%s", viper.GetString("SERVER.PORT"))

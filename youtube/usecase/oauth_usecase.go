@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"ll_test/app/logger"
+	"ll_test/youtube/repository/redis"
 	"net/http"
 	"net/url"
 	"os"
 	"os/user"
 	"path/filepath"
-	"tiktok_api/app/logger"
-	"tiktok_api/youtube/repository/redis"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -43,7 +43,6 @@ func init() {
 	if err != nil {
 		handleError(err, "Google cannot load config from json file", "error")
 	}
-	log.Printf("Load Youtube Client Secret file successfully at path: %s", clientSecretPath)
 }
 
 func YoutubeOAuthCodeExchange(clientKey string, code string) string {
