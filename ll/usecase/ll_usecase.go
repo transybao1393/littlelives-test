@@ -35,7 +35,7 @@ func handleError(err error, message string, errorType string) {
 }
 
 func SaveToMinIO() error {
-	endpoint := "play.min.io"
+	endpoint := "http://minio1/data1"
 	accessKeyID := "Q3AM3UQ867SPQQA43P2F"
 	secretAccessKey := "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
 	useSSL := true
