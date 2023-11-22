@@ -1,10 +1,14 @@
 package router
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"ll_test/app/logger"
 	"ll_test/app/utils"
 	"net/http"
+
+	minioUseCase "ll_test/ll/usecase"
 
 	"golang.org/x/exp/slices"
 )
@@ -12,7 +16,7 @@ import (
 var log = logger.NewLogrusLogger()
 
 const (
-	MB = 10 << 20 //- 10MB
+	MB = 1 << 20 //- 10MB
 )
 
 // - using form
@@ -22,7 +26,7 @@ func LLVideoUploadFile(w http.ResponseWriter, r *http.Request) error {
 	// message := "Video upload success"
 
 	//- limit to 5mb per file
-	if err := r.ParseMultipartForm(5 * MB); err != nil {
+	if err := r.ParseMultipartForm(10 * MB); err != nil {
 		fields := logger.Fields{
 			"service": "Youtube",
 			"message": "Error when parse multipart form",
@@ -58,7 +62,22 @@ func LLVideoUploadFile(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("not allowed file type")
 	}
 
-	//-
+	//- convert to buffer
+	fileBuf := bytes.NewBuffer(nil)
+	if _, err = io.Copy(fileBuf, file); err != nil {
+		fields := logger.Fields{
+			"service": "ll",
+			"message": "Error when copy file to buffer",
+		}
+		log.Fields(fields).Errorf(err, "Error when copy file to buffer")
+		return err
+	}
+
+	//- call to save to minio
+	minioUseCase.SaveToMinIO(file, handler.Header.Get("Content-Type"), fileBuf, handler.Filename, handler.Size)
+
+	//- save file information to mongodb
+	//- return result
 
 	return nil
 }
