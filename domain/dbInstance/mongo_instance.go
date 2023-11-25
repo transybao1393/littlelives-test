@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	CONNECTION_STRING = "mongodb://mongo:27017"
+	CONNECTION_STRING = "mongodb://root:root@mongo:27017"
 	DB_NAME           = "db_file_management"
 )
 
@@ -49,6 +49,9 @@ func GetMongoInstance() *mongo.Client {
 			ctx.Done()
 			panic(err)
 		}
+
+		//- TODO: if ping success => set index
+
 		// clientInstance = client
 		mongoClient = &singleMongoInstance{
 			Conn: client,

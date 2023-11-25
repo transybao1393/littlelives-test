@@ -81,6 +81,7 @@ func SaveToMinIO(file multipart.File, contentType string, bufFile *bytes.Buffer,
 		handleError(err, "Error when add file information", "fatal")
 		return nil
 	}
+	//- quota validate
 
 	handleError(err, fmt.Sprintf("Successfully uploaded %s of size %d\n", objectName, info.Size), "info")
 	return nil

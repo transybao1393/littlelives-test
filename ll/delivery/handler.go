@@ -6,10 +6,12 @@ import (
 	"io"
 	"ll_test/app/logger"
 	"ll_test/app/utils"
+	"ll_test/domain"
 	"net/http"
 
 	usecases "ll_test/ll/usecase"
 
+	"github.com/go-chi/render"
 	"golang.org/x/exp/slices"
 )
 
@@ -21,7 +23,7 @@ const (
 )
 
 func LLAddNewUser(w http.ResponseWriter, r *http.Request) error {
-	userIP := r.RemoteAddr
+	userIP := utils.UserIPHandling(r)
 	userQuota := 10 //- 10 files
 	err := usecases.UserQuotaSet(userIP, userQuota)
 	if err != nil {
@@ -32,11 +34,21 @@ func LLAddNewUser(w http.ResponseWriter, r *http.Request) error {
 		log.Fields(fields).Errorf(err, "Error when add new user")
 		return err
 	}
+
+	//- response
+	statusCode := http.StatusCreated
+	w.WriteHeader(statusCode)
+	render.JSON(w, r, &domain.Response{
+		StatusCode: statusCode,
+		Message:    http.StatusText(statusCode),
+		Data:       nil,
+	},
+	)
 	return nil
 }
 
 // - using form
-func LLVideoUploadFile(w http.ResponseWriter, r *http.Request) error {
+func LLFileUpload(w http.ResponseWriter, r *http.Request) error {
 	//- limit to 5mb per file
 	if err := r.ParseMultipartForm(10 * MB); err != nil {
 		fields := logger.Fields{
@@ -49,7 +61,6 @@ func LLVideoUploadFile(w http.ResponseWriter, r *http.Request) error {
 
 	// Limit upload size
 	r.Body = http.MaxBytesReader(w, r.Body, fileLimit) // 5 Mb
-	fmt.Printf("r.Body: %+v\n", r.Body)
 
 	file, handler, err := r.FormFile("file")
 	if err != nil {
@@ -62,9 +73,8 @@ func LLVideoUploadFile(w http.ResponseWriter, r *http.Request) error {
 	}
 	defer file.Close()
 
-	fmt.Printf("file content type: %+v\n", handler.Header.Get("Content-Type"))
-
 	// validation media type is video
+	//- FIXME: Move this to middleware
 	if !slices.Contains(utils.FileContentType, handler.Header.Get("Content-Type")) {
 		fields := logger.Fields{
 			"service": "ll",
@@ -86,17 +96,47 @@ func LLVideoUploadFile(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	//- call to save to minio
-	usecases.SaveToMinIO(
-		file,
-		handler.Header.Get("Content-Type"),
-		fileBuf,
-		handler.Filename,
-		handler.Size,
-		r.RemoteAddr, //- user IP
+	userIP := utils.UserIPHandling(r)
+	isOverLimit, _ := usecases.IsOverQuota(userIP)
+	if !isOverLimit {
+		usecases.SaveToMinIO(
+			file,
+			handler.Header.Get("Content-Type"),
+			fileBuf,
+			handler.Filename,
+			handler.Size,
+			userIP, //- user IP
+		)
+		_, err = usecases.UpdateQuotaUsedByUserIP(userIP)
+		if err != nil {
+			fields := logger.Fields{
+				"service": "ll",
+				"message": "Error when update quota used",
+			}
+			log.Fields(fields).Errorf(err, "Error when update quota used")
+			return err
+		}
+	} else {
+		//- response
+		statusCode := http.StatusBadRequest
+		w.WriteHeader(statusCode)
+		render.JSON(w, r, &domain.Response{
+			StatusCode: statusCode,
+			Message:    http.StatusText(statusCode),
+			Data:       "Quota exceeded! Please buy more quota",
+		},
+		)
+		return nil
+	}
+
+	//- response
+	statusCode := http.StatusOK
+	w.WriteHeader(statusCode)
+	render.JSON(w, r, &domain.Response{
+		StatusCode: statusCode,
+		Message:    http.StatusText(statusCode),
+		Data:       nil,
+	},
 	)
-
-	//- save file information to mongodb
-	//- return result
-
 	return nil
 }

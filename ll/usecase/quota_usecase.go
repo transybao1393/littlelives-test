@@ -24,11 +24,21 @@ func UserQuotaSet(IP string, quotaNumber int) error {
 	return nil
 }
 
-func UpdateQuotaUsedByUserIP(IP string, quotaUsed int) bool {
+func UpdateQuotaUsedByUserIP(IP string) (bool, error) {
 	//- get current quote + 1
 	quota := &mongoRepository.UserInfo{
-		UserIP:    IP,
-		QuotaUsed: quotaUsed,
+		UserIP: IP,
 	}
 	return quota.UpdateQuotaUsedByUserIP()
+}
+
+func IsOverQuota(IP string) (bool, error) {
+	quota := &mongoRepository.UserInfo{
+		UserIP: IP,
+	}
+	_, err := quota.GetQuotaByUserIP()
+	if err != nil {
+		return true, err
+	}
+	return false, nil
 }

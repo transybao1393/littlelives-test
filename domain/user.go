@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -10,5 +12,6 @@ type User struct {
 	UserIP    string             `json:"userip" bson:"userip,omitempty"`
 	Quota     int                `json:"quota" bson:"quota"` //- 100
 	QuotaUsed int                `json:"quotaUsed" bson:"quotaUsed"`
-	UpdateAt  primitive.DateTime `json:"updateAt" bson:"updateAt"`
+	CreatedAt time.Time          `json:"createdAt" bson:"createdAt"`
+	UpdatedAt time.Time          `json:"updatedAt" bson:"updatedAt"`
 }

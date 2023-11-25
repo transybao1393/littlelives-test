@@ -76,7 +76,6 @@ func (ri *CustomRequest) Exec() ([]byte, error) {
 		}
 	}
 	defer resp.Body.Close()
-	fmt.Printf("status code %d %s \n", resp.StatusCode, resp.Status)
 
 	/**
 	Informational responses (100 – 199)
@@ -87,7 +86,6 @@ func (ri *CustomRequest) Exec() ([]byte, error) {
 	*/
 	//- Success
 	//- write test cases to check response status code
-	fmt.Printf("Status code %d, response message %s\n", resp.StatusCode, resp.Status)
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		//- Body decode to string
 		bodyBytes, err := io.ReadAll(resp.Body)
@@ -102,7 +100,6 @@ func (ri *CustomRequest) Exec() ([]byte, error) {
 
 	//- Error
 	errorResponseBodyByteData, err := io.ReadAll(resp.Body)
-	fmt.Printf("errorResponseBodyByteData %v, error %v \n", string(errorResponseBodyByteData), err)
 	return nil, NewError(string(errorResponseBodyByteData))
 }
 
@@ -138,7 +135,6 @@ func (pu *PathURL) Build() string {
 	if len(pu.PathParams) > 0 && len(pu.QueryParams) > 0 {
 		finalURL = apiDomain + apiURI + "/" + pu.pathParamsString + "?" + pu.queryParamsString
 	}
-	fmt.Printf("%s \n", finalURL)
 	return finalURL
 }
 

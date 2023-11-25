@@ -17,6 +17,8 @@ import (
 
 type Handler func(w http.ResponseWriter, r *http.Request) error
 
+// type Handler2 func(w http.ResponseWriter, r *http.Request) domain.Response
+
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 	err := h(w, r)
@@ -59,6 +61,6 @@ func llHandler(r chi.Router) {
 	//- authentication here
 	r.Group(func(r chi.Router) {
 		r.Method("POST", "/user", Handler(llDelivery.LLAddNewUser))
-		r.Method("POST", "/file", Handler(llDelivery.LLVideoUploadFile))
+		r.Method("POST", "/file", Handler(llDelivery.LLFileUpload))
 	})
 }
