@@ -16,6 +16,7 @@ require (
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 	golang.org/x/oauth2 v0.12.0
 	google.golang.org/api v0.126.0
+	go.mongodb.org/mongo-driver v1.13.0
 )
 
 require (

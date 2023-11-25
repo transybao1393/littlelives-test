@@ -8,7 +8,7 @@ import (
 	"ll_test/app/utils"
 	"net/http"
 
-	minioUseCase "ll_test/ll/usecase"
+	usecases "ll_test/ll/usecase"
 
 	"golang.org/x/exp/slices"
 )
@@ -16,15 +16,27 @@ import (
 var log = logger.NewLogrusLogger()
 
 const (
-	MB = 1 << 20 //- 10MB
+	MB        = 1 << 20 //- 1MB
+	fileLimit = 5 * MB  // 5 MB
 )
+
+func LLAddNewUser(w http.ResponseWriter, r *http.Request) error {
+	userIP := r.RemoteAddr
+	userQuota := 10 //- 10 files
+	err := usecases.UserQuotaSet(userIP, userQuota)
+	if err != nil {
+		fields := logger.Fields{
+			"service": "littlelives",
+			"message": "Error when add new user",
+		}
+		log.Fields(fields).Errorf(err, "Error when add new user")
+		return err
+	}
+	return nil
+}
 
 // - using form
 func LLVideoUploadFile(w http.ResponseWriter, r *http.Request) error {
-	fmt.Println("LLVideoUploadFile...")
-	//- receive file
-	// message := "Video upload success"
-
 	//- limit to 5mb per file
 	if err := r.ParseMultipartForm(10 * MB); err != nil {
 		fields := logger.Fields{
@@ -36,7 +48,7 @@ func LLVideoUploadFile(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Limit upload size
-	r.Body = http.MaxBytesReader(w, r.Body, 5*MB) // 5 Mb
+	r.Body = http.MaxBytesReader(w, r.Body, fileLimit) // 5 Mb
 	fmt.Printf("r.Body: %+v\n", r.Body)
 
 	file, handler, err := r.FormFile("file")
@@ -74,7 +86,14 @@ func LLVideoUploadFile(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	//- call to save to minio
-	minioUseCase.SaveToMinIO(file, handler.Header.Get("Content-Type"), fileBuf, handler.Filename, handler.Size)
+	usecases.SaveToMinIO(
+		file,
+		handler.Header.Get("Content-Type"),
+		fileBuf,
+		handler.Filename,
+		handler.Size,
+		r.RemoteAddr, //- user IP
+	)
 
 	//- save file information to mongodb
 	//- return result

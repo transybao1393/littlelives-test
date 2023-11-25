@@ -11,7 +11,6 @@ import (
 	"ll_test/app/pkg/httpErrors"
 
 	llDelivery "ll_test/ll/delivery"
-	youtubeDelivery "ll_test/youtube/delivery"
 
 	"github.com/go-chi/httprate"
 )
@@ -51,27 +50,15 @@ func SetupRouter() *chi.Mux {
 	)) //- 100 request per 1 minute
 
 	// Routing
-	r.Route("/youtube", youtubeHandler)
 	r.Route("/littlelives", llHandler)
 
 	return r
 }
 
-func youtubeHandler(r chi.Router) {
-	r.Method("GET", "/oauth", Handler(youtubeDelivery.GenerateAuthURL))
-	r.HandleFunc("/auth/callback", youtubeDelivery.OAuthYoutubeCallback)
-
-	r.Group(func(r chi.Router) {
-		// r.Use(youtubeMiddleware.IsTokensValid)
-		// r.Method("POST", "/video/path", Handler(youtubeDelivery.YoutubeVideoUpload))
-		r.Method("POST", "/video/file", Handler(youtubeDelivery.YoutubeVideoUploadFile))
-		r.Method("GET", "/video/engagement/{clientKey}/{videoId}", Handler(youtubeDelivery.YoutubeVideoEngagement))
-	})
-}
-
 func llHandler(r chi.Router) {
 	//- authentication here
 	r.Group(func(r chi.Router) {
+		r.Method("POST", "/user", Handler(llDelivery.LLAddNewUser))
 		r.Method("POST", "/file", Handler(llDelivery.LLVideoUploadFile))
 	})
 }
