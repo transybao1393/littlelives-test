@@ -1,4 +1,4 @@
-# Social Media Management
+# LittleLives test
 ## High level architect
 ![Alt text](/clean-architect.png "Clean architecture design")
 
